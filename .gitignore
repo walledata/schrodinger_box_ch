@@ -1,0 +1,10 @@
+/.idea/
+/nft_market_min_send/.idea/
+/node_modules/
+/artifacts/
+/cache/
+/typechain-types/
+/.env
+/.fleet/
+/.openzeppelin/
+

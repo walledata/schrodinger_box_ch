@@ -1,0 +1,17 @@
+{
+  "name": "hardhat-project",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+    "ethers": "^5.5.1",
+    "hardhat": "^2.10.2",
+    "hardhat-contract-sizer": "^2.4.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.7.3",
+    "crypto-js": "^4.1.1",
+    "defender-autotask-client": "^1.30.0-rc.1",
+    "defender-kvstore-client": "^1.28.1",
+    "defender-sentinel-client": "^1.28.1",
+    "dotenv": "^16.0.1"
+  }
+}
