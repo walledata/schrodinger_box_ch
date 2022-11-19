@@ -21,11 +21,13 @@ import "./security/ReentrancyGuard.sol";
 import "./utils/Counters.sol";
 
 import "./HashLists.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
 
 
-
-contract PrizePool is IERC721Receiver, ERC165, ERC721Holder, Ownable, ReentrancyGuard, VRFConsumerBaseV2 {
+contract PrizePool is IERC721Receiver, ERC165, ERC721Holder, Ownable, ReentrancyGuard, VRFConsumerBaseV2
+//, AutomationCompatibleInterface
+{
 
     using Counters for Counters.Counter;
     using HashLists for HashLists.HashList;
@@ -153,10 +155,10 @@ contract PrizePool is IERC721Receiver, ERC165, ERC721Holder, Ownable, Reentrancy
                 if (requestRevealTicketIdList.length == allPrizeIdList.length) {
                     require(false, "PrizePoolDriedUp");
                 }
-                else {
-                    uint256 lastPrizeId = ticketIdPrizeRevealedEventMapping[lastRequestRevealTicketId].prizeId;
-                    remainPrizeIdHashList.deleteEntity(lastPrizeId);
-                }
+//                else {
+//                    uint256 lastPrizeId = ticketIdPrizeRevealedEventMapping[lastRequestRevealTicketId].prizeId;
+//                    remainPrizeIdHashList.deleteEntity(lastPrizeId);
+//                }
             }
         }
 
@@ -180,6 +182,102 @@ contract PrizePool is IERC721Receiver, ERC165, ERC721Holder, Ownable, Reentrancy
 
 
 
+
+
+
+//    uint256 public constant SIZE = 1000;
+//    uint256 public constant LIMIT = 1000;
+//    uint256[SIZE] public balances;
+//    uint256 public liquidity = 1000000;
+//
+//
+//
+//    /* @dev this method is called by the Chainlink Automation Nodes to check if `performUpkeep` must be done. Note that `checkData` is used to segment the computation to subarrays.
+//     *
+//     *  @dev `checkData` is an encoded binary data and which contains the lower bound and upper bound on which to perform the computation
+//     *
+//     *  @dev return `upkeepNeeded`if rebalancing must be done and `performData` which contains an array of indexes that require rebalancing and their increments. This will be used in `performUpkeep`
+//     */
+//    function checkUpkeep(
+//        bytes calldata checkData
+//    )
+//    external
+//    view
+//    override
+//    returns (bool upkeepNeeded, bytes memory performData)
+//    {
+//        // perform the computation to a subarray of `balances`. This opens the possibility of having several checkUpkeeps done at the same time
+//        (uint256 lowerBound, uint256 upperBound) = abi.decode(
+//            checkData,
+//            (uint256, uint256)
+//        );
+//        require(
+//            upperBound < SIZE && lowerBound < upperBound,
+//            "Lowerbound and Upperbound not correct"
+//        );
+//        // first get number of elements requiring updates
+//        uint256 counter;
+//        for (uint256 i = 0; i < upperBound - lowerBound + 1; i++) {
+//            if (balances[lowerBound + i] < LIMIT) {
+//                counter++;
+//            }
+//        }
+//        // initialize array of elements requiring increments as long as the increments
+//        uint256[] memory indexes = new uint256[](counter);
+//        uint256[] memory increments = new uint256[](counter);
+//
+//        upkeepNeeded = false;
+//        uint256 indexCounter;
+//
+//        for (uint256 i = 0; i < upperBound - lowerBound + 1; i++) {
+//            if (balances[lowerBound + i] < LIMIT) {
+//                // if one element has a balance < LIMIT then rebalancing is needed
+//                upkeepNeeded = true;
+//                // store the index which needs increment as long as the increment
+//                indexes[indexCounter] = lowerBound + i;
+//                increments[indexCounter] = LIMIT - balances[lowerBound + i];
+//                indexCounter++;
+//            }
+//        }
+//        performData = abi.encode(indexes, increments);
+//        return (upkeepNeeded, performData);
+//    }
+//
+//    /* @dev this method is called by the Automation Nodes. it increases all elements whose balances are lower than the LIMIT. Note that the elements are bounded by `lowerBound`and `upperBound`
+//     *  (provided by `performData`
+//     *
+//     *  @dev `performData` is an encoded binary data which contains the lower bound and upper bound of the subarray on which to perform the computation.
+//     *  it also contains the increments
+//     *
+//     *  @dev return `upkeepNeeded`if rebalancing must be done and `performData` which contains an array of increments. This will be used in `performUpkeep`
+//     */
+//    function performUpkeep(bytes calldata performData) external override {
+//        (uint256[] memory indexes, uint256[] memory increments) = abi.decode(
+//            performData,
+//            (uint256[], uint256[])
+//        );
+//        // important to always check that the data provided by the Automation Node is not corrupted.
+//        require(
+//            indexes.length == increments.length,
+//            "indexes and increments arrays' lengths not equal"
+//        );
+//
+//        uint256 _balance;
+//        uint256 _liquidity = liquidity;
+//
+//        for (uint256 i = 0; i < indexes.length; i++) {
+//            _balance = balances[indexes[i]] + increments[i];
+//            // important to always check that the data provided by the Automation Nodes is not corrupted. Here we check that after rebalancing, the balance of the element is equal to the LIMIT
+//            require(_balance == LIMIT, "Provided increment not correct");
+//            _liquidity -= increments[i];
+//            balances[indexes[i]] = _balance;
+//        }
+//        liquidity = _liquidity;
+//    }
+
+
+
+
     function fulfillRandomWords(
         uint256 requestId, /* requestId */
         uint256[] memory randomWords
@@ -194,6 +292,7 @@ contract PrizePool is IERC721Receiver, ERC165, ERC721Holder, Ownable, Reentrancy
         uint256 randomness_ = randomWords[0];
         uint256 indexHitInRemainPrizeIdList = generateRandomNumberInRange(randomness_, remainPrizeIdHashList.getEntityCount());
         uint256 revealedPrizeId = remainPrizeIdHashList.getEntityDataByIndex(indexHitInRemainPrizeIdList);
+        remainPrizeIdHashList.deleteEntity(revealedPrizeId);
 
         ticketIdPrizeRevealedEventMapping[lastRequestRevealRandomTicketId].prizeId = revealedPrizeId;
         ticketIdPrizeRevealedEventMapping[lastRequestRevealRandomTicketId].randomness = randomness_;
@@ -201,8 +300,13 @@ contract PrizePool is IERC721Receiver, ERC165, ERC721Holder, Ownable, Reentrancy
 
         emit PrizeRevealed(lastRequestRevealRandomTicketId, revealedPrizeId,requestId);
 
-
     }
+
+
+
+
+
+
 
 
     function retrievePrize(address nftAddr, uint256 ticketId) external checkTicketIsForThisPrizePoolAndOwnerOfSender(nftAddr, ticketId) onlyTxOriginSender nonReentrant {
